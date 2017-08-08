@@ -16,9 +16,9 @@ go로 만든 슬랙 크롤러 봇입니다. 사용한 라이브러리는 아래�
 [tcnksm/go-slack-interactive](https://github.com/tcnksm/go-slack-interactive)
 
 위 봇은 아래와 같이 작동합니다.
-![](/src/go_slang_bot/go.gif)
-![](/src/go_slang_bot/go2.gif)
-![](/src/go_slang_bot/go3.gif)
+![](/go.gif)
+![](/go2.gif)
+![](/go3.gif)
 
 또 시간별로 이런 알림도 줍니다.
 
