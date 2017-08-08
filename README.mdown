@@ -1,0 +1,35 @@
+# go 웹 크롤러 슬랙 봇
+
+go로 만든 슬랙 크롤러 봇입니다. 사용한 라이브러리는 아래와 같습니다.
+
+1. [slack interactive message](https://api.slack.com/interactive-messages)
+2. [PuerkitoBio/goquery](https://github.com/PuerkitoBio/goquery)
+3. [dghubble/go-twitter](https://github.com/dghubble/go-twitter/twitter)
+4. [dghubble/oauth1](https://github.com/dghubble/oauth1)
+5. [github.com/mmcdole/gofeed](https://github.com/mmcdole/gofeed)
+6. [nlopes/slack](https://github.com/nlopes/slack)
+
+또 아래 분의 샘플에 많은 영감을 얻었습니다.
+
+[tcnksm/go-slack-interactive](https://github.com/tcnksm/go-slack-interactive)
+
+위 봇은 아래와 같이 작동합니다.
+![](/src/slack_test/go.gif)
+
+---
+
+## 사용법
+
+### @봇 이름
+
+봇에게 멘션할 시 (구현중)
+
+### 기사, 뉴스, 소식, news 입력 시 최신 IT기사를 크롤링합니다.
+
+### okky, 오키, 옼희 입력 시 오키의 기술 게시글을 크롤링합니다.
+
+### 블로그, blog입력 시 기술블로그를 크롤링합니다.
+
+### 트위터, 트윗, twitter 입력 시 트위터를 크롤링합니다.
+
+### 깃허브, 깃헙, github 입력 시 깃허브에서 유행하는 go 오픈소스를 크롤링합니다.
