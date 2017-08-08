@@ -535,6 +535,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv twit
 // 시간별로 채널에 메세지 보내기
 func (s *SlackListener) PostByTime(env envConfig) {
 
+	// 정확히 n시 0분 0초가 딱 정시 되는 순간 작동!
 	for n := range GetHour().C {
 
 		hour, _, _ := n.Clock()
@@ -569,7 +570,24 @@ func (s *SlackListener) PostByTime(env envConfig) {
 						attachment,
 					},
 				}
+
+				//제가 새로 만든 유저에게 멘션을 보내는 메서드(풀 리퀘스트는 받아질 것인가?)
+				//사용법 (보낼 채널, 보낼 텍스트, 보낼 유저(아이디), 파라미터)
+				//그냥 쓰시려면 s.client.PostMessage(env.ChannelID, "<@유저아이디> ", params)
+				//꼭 <> 를 넣어줘야 가더라고요...
 				s.client.PostMessageTo(env.ChannelID, "", "U6DKDJMPV", params)
+				/*
+					func (api *Client) PostMessageTo(channel, text string, id string, params PostMessageParameters) (string, string, error) {
+						respChannel, respTimestamp, _, err := api.SendMessageContext(
+							context.Background(),
+							channel,
+							MsgOptionText("<@"+id+"> "+text, params.EscapeText),
+							MsgOptionAttachments(params.Attachments...),
+							MsgOptionPostMessageParameters(params),
+						)
+						return respChannel, respTimestamp, err
+					}
+				*/
 			}
 		case 15:
 			if !getGitCommit("hero0926") {
@@ -607,7 +625,8 @@ func (s *SlackListener) PostByTime(env envConfig) {
 
 					Color:      "#680e0e",
 					AuthorName: "Commit-bot",
-					Title:      "Commit-bot is watching your commit... PLZ commit soon...",
+					Title: `Commit-bot is watching your commit...
+					PLZ commit soon...(아직도 안했다는 소리이다.)`,
 				}
 				params := slack.PostMessageParameters{
 					Attachments: []slack.Attachment{
