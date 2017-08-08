@@ -134,6 +134,8 @@ func (s *SlackListener) ListenAndResponse(tweetenv twitterConfig) {
 // 메시지 받고 보내기
 func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv twitterConfig) error {
 
+	userID := ev.Msg.User
+
 	receivedMsg := ev.Msg.Text
 
 	// 다른 채널에 쳤을때
@@ -142,7 +144,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv twit
 		return nil
 	}
 
-	log.Println("유저 입력 : ", receivedMsg)
+	log.Println("%s 입력 : ", userID, receivedMsg)
 
 	// 봇에게 한 멘션이 아닐 때
 	if !(strings.HasPrefix(receivedMsg, fmt.Sprintf("<@%s> ", s.botID))) {
@@ -417,6 +419,16 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv twit
 
 		}
 
+		/* 테스트용 메서드~
+		if strings.Contains(receivedMsg, "테스트") {
+			params := slack.PostMessageParameters{
+				Attachments: []slack.Attachment{},
+			}
+
+			s.client.PostMessage(userID, "디엠 테스트", params)
+		}
+		*/
+
 		return nil
 
 	}
@@ -582,7 +594,7 @@ func (s *SlackListener) PostByTime(env envConfig) {
 				//사용법 (보낼 채널, 보낼 텍스트, 보낼 유저(아이디), 파라미터)
 				//그냥 쓰시려면 s.client.PostMessage(env.ChannelID, "<@유저아이디> ", params)
 				//꼭 <> 를 넣어줘야 가더라고요...
-				s.client.PostMessageTo(env.ChannelID, "", "U6DKDJMPV", params)
+				//s.client.PostMessageTo(env.ChannelID, "", "U6DKDJMPV", params)
 				/*
 					func (api *Client) PostMessageTo(channel, text string, id string, params PostMessageParameters) (string, string, error) {
 						respChannel, respTimestamp, _, err := api.SendMessageContext(
@@ -595,6 +607,9 @@ func (s *SlackListener) PostByTime(env envConfig) {
 						return respChannel, respTimestamp, err
 					}
 				*/
+
+				//또는 디엠을 보내고 싶을때는 채널명에 유저ID를 쓰시면 됩니다.
+				s.client.PostMessage("U6DKDJMPV", "", params)
 			}
 		case 15:
 			b, _ := getGitCommit("hero0926")
@@ -610,7 +625,7 @@ func (s *SlackListener) PostByTime(env envConfig) {
 						attachment,
 					},
 				}
-				s.client.PostMessageTo(env.ChannelID, "", "U6DKDJMPV", params)
+				s.client.PostMessage("U6DKDJMPV", "", params)
 			}
 		case 16:
 			b, _ := getGitCommit("hero0926")
@@ -626,7 +641,7 @@ func (s *SlackListener) PostByTime(env envConfig) {
 						attachment,
 					},
 				}
-				s.client.PostMessageTo(env.ChannelID, "", "U6DKDJMPV", params)
+				s.client.PostMessage("U6DKDJMPV", "", params)
 			}
 		case 17:
 			b, _ := getGitCommit("hero0926")
@@ -643,7 +658,7 @@ func (s *SlackListener) PostByTime(env envConfig) {
 						attachment,
 					},
 				}
-				s.client.PostMessageTo(env.ChannelID, "", "U6DKDJMPV", params)
+				s.client.PostMessage("U6DKDJMPV", "", params)
 			}
 
 		case 18:
@@ -665,7 +680,7 @@ func (s *SlackListener) PostByTime(env envConfig) {
 					},
 				}
 
-				s.client.PostMessageTo(env.ChannelID, "", "U6DKDJMPV", params)
+				s.client.PostMessage("U6DKDJMPV", "", params)
 
 			} else {
 
@@ -683,9 +698,23 @@ func (s *SlackListener) PostByTime(env envConfig) {
 					},
 				}
 
-				s.client.PostMessageTo(env.ChannelID, "", "U6DKDJMPV", params)
-
+				s.client.PostMessage("U6DKDJMPV", "", params)
 			}
+
+			attachment := slack.Attachment{
+
+				Color:      "#ff0033",
+				AuthorName: "퇴근알림",
+				Title:      "퇴근 할 시간입니다!",
+				Text:       "오늘도 수고하셨어요.",
+			}
+			params := slack.PostMessageParameters{
+				Attachments: []slack.Attachment{
+					attachment,
+				},
+			}
+
+			s.client.PostMessage(env.ChannelID, "", params)
 
 			// 야근봇 구현
 			// 퇴근 후 일정시간 자동 백업 등을 수행할 수 있을 것 같음...
