@@ -61,6 +61,8 @@ func main() {
 
 func _main(args []string) int {
 
+	getGitCommit("hero0926")
+
 	defer func() {
 		if err := recover(); err != nil {
 			log.Fatal(err)
@@ -316,7 +318,10 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv twit
 			strings.TrimSpace(id)
 
 			// 사용자가 커밋을 하지 않았을 경우
-			if !getGitCommit(id) {
+
+			b, c := getGitCommit(id)
+
+			if !b {
 
 				attachment := slack.Attachment{
 
@@ -340,7 +345,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv twit
 				attachment := slack.Attachment{
 
 					Color:     "#e20000",
-					Title:     id + "님께서는 오늘 커밋을 했습니다!",
+					Title:     id + "님께서는 오늘 " + fmt.Sprint(c) + "개의 커밋을 했습니다!",
 					TitleLink: "https://github.com/" + id,
 					Text:      "앞으로도 수고해 주세요",
 				}
@@ -558,7 +563,9 @@ func (s *SlackListener) PostByTime(env envConfig) {
 
 			// 시간별 커밋 알림봇 구현
 		case 14:
-			if !getGitCommit("hero0926") {
+
+			b, _ := getGitCommit("hero0926")
+			if !b {
 				attachment := slack.Attachment{
 
 					Color:      "#635129",
@@ -590,7 +597,8 @@ func (s *SlackListener) PostByTime(env envConfig) {
 				*/
 			}
 		case 15:
-			if !getGitCommit("hero0926") {
+			b, _ := getGitCommit("hero0926")
+			if !b {
 				attachment := slack.Attachment{
 
 					Color:      "#633f29",
@@ -605,7 +613,8 @@ func (s *SlackListener) PostByTime(env envConfig) {
 				s.client.PostMessageTo(env.ChannelID, "", "U6DKDJMPV", params)
 			}
 		case 16:
-			if !getGitCommit("hero0926") {
+			b, _ := getGitCommit("hero0926")
+			if !b {
 				attachment := slack.Attachment{
 
 					Color:      "#632b29",
@@ -620,7 +629,8 @@ func (s *SlackListener) PostByTime(env envConfig) {
 				s.client.PostMessageTo(env.ChannelID, "", "U6DKDJMPV", params)
 			}
 		case 17:
-			if !getGitCommit("hero0926") {
+			b, _ := getGitCommit("hero0926")
+			if !b {
 				attachment := slack.Attachment{
 
 					Color:      "#680e0e",
@@ -637,22 +647,48 @@ func (s *SlackListener) PostByTime(env envConfig) {
 			}
 
 		case 18:
-			attachment := slack.Attachment{
 
-				Color:      "#ff0033",
-				AuthorName: "퇴근알림",
-				Title:      "퇴근 할 시간입니다!",
-				Text:       "오늘도 수고하셨어요.",
-			}
-			params := slack.PostMessageParameters{
-				Attachments: []slack.Attachment{
-					attachment,
-				},
-			}
+			b, c := getGitCommit("hero0926")
 
-			s.client.PostMessage(env.ChannelID, "", params)
+			if !b {
+
+				attachment := slack.Attachment{
+
+					Color:      "#ff0033",
+					AuthorName: "퇴근알림",
+					Title:      "퇴근 할 시간인데도 커밋을 하지 않았습니다!",
+					Text:       "뭔가 하고 가시던지 집에 가서 해보세요!",
+				}
+				params := slack.PostMessageParameters{
+					Attachments: []slack.Attachment{
+						attachment,
+					},
+				}
+
+				s.client.PostMessageTo(env.ChannelID, "", "U6DKDJMPV", params)
+
+			} else {
+
+				attachment := slack.Attachment{
+
+					Color:      "#ff0033",
+					AuthorName: "퇴근알림",
+					Title:      "퇴근 할 시간입니다!",
+					Text: `오늘도 수고하셨어요.` +
+						"오늘은" + fmt.Sprint(c) + "개의 커밋을 하였습니다.",
+				}
+				params := slack.PostMessageParameters{
+					Attachments: []slack.Attachment{
+						attachment,
+					},
+				}
+
+				s.client.PostMessageTo(env.ChannelID, "", "U6DKDJMPV", params)
+
+			}
 
 			// 야근봇 구현
+			// 퇴근 후 일정시간 자동 백업 등을 수행할 수 있을 것 같음...
 		case 19, 20, 21:
 
 			Users, _ := s.client.GetUsers()
@@ -670,7 +706,7 @@ func (s *SlackListener) PostByTime(env envConfig) {
 				Pretext:    "아직 불철주야 일하고 계신 분",
 				AuthorName: "현재 근무자",
 				Title:      strings.Join(logineduser, "\n"),
-				Text:       "님께서" + string(hour) + "시까지 수고해주시고 계십니다.",
+				Text:       "님께서" + fmt.Sprint(hour) + "시까지 수고해주시고 계십니다.",
 			}
 			params := slack.PostMessageParameters{
 				Attachments: []slack.Attachment{
@@ -680,9 +716,7 @@ func (s *SlackListener) PostByTime(env envConfig) {
 			s.client.PostMessage(env.ChannelID, "", params)
 
 		}
-
 	}
-
 }
 
 // 정시 얻기

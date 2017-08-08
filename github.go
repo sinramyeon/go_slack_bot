@@ -15,7 +15,7 @@ const (
 )
 
 // 유저의 깃허브 커밋 여부를 받아오기
-func getGitCommit(id string) bool {
+func getGitCommit(id string) (b bool, commit int) {
 
 	// 현재시간 구하기
 	koryear, kormon, kordate := time.Now().Date()
@@ -51,9 +51,10 @@ func getGitCommit(id string) bool {
 
 	// 커밋이 없으면 false, 있으면 true
 	if len(commitArray) == 0 {
-		return false
+		return false, 0
 	} else {
-		return true
+
+		return true, len(commitArray)
 	}
 
 }
