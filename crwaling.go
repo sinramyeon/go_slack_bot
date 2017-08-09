@@ -16,7 +16,6 @@ https://github.com/PuerkitoBio/goquery
 package main
 
 import (
-	"log"
 	"strings"
 
 	"math/rand"
@@ -35,6 +34,12 @@ type slackReturn struct {
 
 // 트위터 읽기
 func TwitterScrape(env twitterConfig) map[string]string {
+
+	defer func() {
+		if err := recover(); err != nil {
+			return
+		}
+	}()
 
 	tweetlist := make(map[string]string)
 
@@ -59,25 +64,15 @@ func TwitterScrape(env twitterConfig) map[string]string {
 
 	// 특정 계정 크롤링 하기
 
-	tweets := GetUserTweets(2, "golangweekly", client)
+	tweets := AllTweets(client)
 
-	for _, v := range tweets {
-		tweetlist[v.Text] = tweetlist[v.Entities.Urls[0].URL]
+	for i := 0; i < 5; i++ {
+
+		//tweets 중 하나를 골라다
+		k, v := selRand(tweets)
+		tweetlist[k] = v
 	}
 
-	tweets = GetUserTweets(2, "WEIRDxMEETUP", client)
-
-	for _, v := range tweets {
-		tweetlist[v.Text] = tweetlist[v.Entities.Urls[0].URL]
-	}
-
-	tweets = GetUserTweets(2, "devsfarm", client)
-
-	for _, v := range tweets {
-		tweetlist[v.Text] = tweetlist[v.Entities.Urls[0].URL]
-	}
-
-	// 트윗 내용이 키이고 url이 밸류인 걸로 리턴 했습니다(밸류안에 뭘 넣을지 고민중...)
 	return tweetlist
 
 }
@@ -96,11 +91,54 @@ func GetUserTweets(many int, id string, client *twitter.Client) []twitter.Tweet 
 
 }
 
-// 갑자기 null값 보냄
+// 트윗 저장용
+
+func AllTweets(client *twitter.Client) map[string]string {
+
+	tweetlist := make(map[string]string)
+
+	tweets := GetUserTweets(20, "golangweekly", client)
+
+	for _, v := range tweets {
+		tweetlist[v.Text] = tweetlist[v.Entities.Urls[0].URL]
+	}
+
+	tweets = GetUserTweets(20, "WEIRDxMEETUP", client)
+
+	for _, v := range tweets {
+		tweetlist[v.Text] = tweetlist[v.Entities.Urls[0].URL]
+	}
+
+	tweets = GetUserTweets(20, "devsfarm", client)
+
+	for _, v := range tweets {
+		tweetlist[v.Text] = tweetlist[v.Entities.Urls[0].URL]
+	}
+
+	return tweetlist
+}
+
+// Rand 용(정말 매우 귀찮기 그지없음)
+// map 넣을 시 랜덤 k, v을 반환... 왜 고랭에는 셔플이 없는거지?...
+func selRand(m map[string]string) (k string, v string) {
+	i := rand.Intn(len(m))
+	for k := range m {
+		if i == 0 {
+			return k, m[k]
+		}
+		i--
+	}
+	panic("never")
+}
+
 // rss 블로그 읽기
 func RssScrape() map[string]string {
 
-	log.Println("RssScrape")
+	defer func() {
+		if err := recover(); err != nil {
+			return
+		}
+	}()
 
 	rssURL := []string{
 		"https://charsyam.wordpress.com/feed/",
@@ -233,7 +271,6 @@ func RssScrape() map[string]string {
 		"http://tech.lezhin.com/rss/",
 		"http://blog.secmem.org/rss",
 		"https://spoqa.github.io/rss",
-		"https://blogs.idincu.com/dev/feed/",
 		"http://dev.rsquare.co.kr/feed/",
 		"http://feeds.feedburner.com/acornpub",
 		"http://blog.embian.com/rss",
@@ -257,21 +294,17 @@ func RssScrape() map[string]string {
 
 	rand.Seed(time.Now().UnixNano())
 
-	for i := 0; i < 4; i++ {
+	for i := 0; i < 5; i++ {
 
 		//rssURL 중 하나를 골라다
 		choosen := rssURL[rand.Intn(len(rssURL)-1)]
 
 		//파징 하기
 		fp := gofeed.NewParser()
-		feed, err := fp.ParseURL(choosen)
-
-		log.Println("???????", feed, err)
+		feed, _ := fp.ParseURL(choosen)
 
 		rsslist[feed.Items[0].Title] = feed.Items[0].Link
 	}
-
-	log.Println("rsslist : ", rsslist)
 
 	return rsslist
 

@@ -121,7 +121,13 @@ func (s *SlackListener) ListenAndResponse(tweetenv twitterConfig) {
 
 	for msg := range rtm.IncomingEvents {
 
+		// 타입이 특정 인터페이스를 구현하는지 검사
+		// interface{}.(타입).(구현하는지 궁금한 인터페이스)
 		switch ev := msg.Data.(type) {
+		/////////////interface.(type) 형식을 눈에 익혀두자~
+		//Data 인터페이스의 type에 따라 switch 문 돌리는 중...
+		//slack 의 messageEvent일때 처리
+
 		case *slack.MessageEvent:
 			if err := s.handleMessageEvent(ev, tweetenv); err != nil {
 
@@ -144,7 +150,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv twit
 		return nil
 	}
 
-	log.Println("%s 입력 : ", userID, receivedMsg)
+	log.Println(userID, " : ", receivedMsg)
 
 	// 봇에게 한 멘션이 아닐 때
 	if !(strings.HasPrefix(receivedMsg, fmt.Sprintf("<@%s> ", s.botID))) {
@@ -162,24 +168,30 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv twit
 			log.Println("기사 크롤링 시.")
 			m := NewsScrape()
 
-			for k, v := range m {
+			if !(len(m) == 0) {
 
-				attachment := slack.Attachment{
+				for k, v := range m {
 
-					Color: "#cc1512",
-					Title: k,
-					Text:  v,
+					attachment := slack.Attachment{
+
+						Color: "#cc1512",
+						Title: k,
+						Text:  v,
+					}
+
+					params := slack.PostMessageParameters{
+
+						Attachments: []slack.Attachment{
+							attachment,
+						},
+					}
+
+					s.client.PostMessage(ev.Channel, "", params)
+
 				}
 
-				params := slack.PostMessageParameters{
-
-					Attachments: []slack.Attachment{
-						attachment,
-					},
-				}
-
-				s.client.PostMessage(ev.Channel, "", params)
-
+			} else {
+				s.client.PostMessage(ev.Channel, "알 수 없는 에러가 발생했습니다. 다시 시도해 주세요.", slack.PostMessageParameters{})
 			}
 		}
 
@@ -190,37 +202,44 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv twit
 			log.Println("오키 크롤링 시.")
 			m := OkkyScrape()
 
-			for k, v := range m {
+			if len(m) == 0 {
+				s.client.PostMessage(ev.Channel, "알 수 없는 에러가 발생했습니다. 다시 시도해 주세요.", slack.PostMessageParameters{})
+			} else {
 
-				attachment := slack.Attachment{
+				for k, v := range m {
 
-					Color: "#104293",
-					Title: k,
-					Text:  v,
+					attachment := slack.Attachment{
+
+						Color: "#104293",
+						Title: k,
+						Text:  v,
+					}
+
+					params := slack.PostMessageParameters{
+
+						Attachments: []slack.Attachment{
+							attachment,
+						},
+					}
+
+					s.client.PostMessage(ev.Channel, "", params)
+
 				}
-
-				params := slack.PostMessageParameters{
-
-					Attachments: []slack.Attachment{
-						attachment,
-					},
-				}
-
-				s.client.PostMessage(ev.Channel, "", params)
-
 			}
 
 		}
 
 		// 라. 블로그 입력 시(RSS)
-		/*
-			if strings.Contains(receivedMsg, "블로그") {
 
-				log.Println("블로그 크롤링 시.")
+		if strings.Contains(receivedMsg, "블로그") {
 
-				m := RssScrape()
+			log.Println("블로그 크롤링 시.")
 
-				log.Println(m)
+			m := RssScrape()
+
+			if len(m) == 0 {
+				s.client.PostMessage(ev.Channel, "알 수 없는 에러가 발생했습니다. 다시 시도해 주세요.", slack.PostMessageParameters{})
+			} else {
 
 				for k, v := range m {
 
@@ -241,9 +260,9 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv twit
 					s.client.PostMessage(ev.Channel, "", params)
 
 				}
-
 			}
-		*/
+		}
+
 		// 3. 트위터 찾기
 
 		if strings.Contains(receivedMsg, "트윗") || strings.Contains(receivedMsg, "트위터") {
@@ -252,25 +271,27 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv twit
 
 			m := TwitterScrape(tweetenv)
 
-			log.Println(m)
+			if len(m) == 0 {
+				s.client.PostMessage(ev.Channel, "알 수 없는 에러가 발생했습니다. 다시 시도해 주세요.", slack.PostMessageParameters{})
+			} else {
+				for k, v := range m {
 
-			for k, v := range m {
+					attachment := slack.Attachment{
 
-				attachment := slack.Attachment{
+						Color: "#42c7d6",
+						Title: k,
+						Text:  v,
+					}
 
-					Color: "#42c7d6",
-					Title: k,
-					Text:  v,
+					params := slack.PostMessageParameters{
+
+						Attachments: []slack.Attachment{
+							attachment,
+						},
+					}
+
+					s.client.PostMessage(ev.Channel, "", params)
 				}
-
-				params := slack.PostMessageParameters{
-
-					Attachments: []slack.Attachment{
-						attachment,
-					},
-				}
-
-				s.client.PostMessage(ev.Channel, "", params)
 			}
 		}
 
@@ -406,7 +427,8 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv twit
 				2. @it_trend_go3 버튼 기능(개발중)
 				2. 기사, 뉴스, 소식 키워드 입력 시 오늘의 IT 뉴스라인을 보실 수 있습니다.
 				3. 오키, 옼희 입력 시 오키 주간 기술 트렌드를 보실 수 있습니다.
-				4. 트위터, 트윗 입력 시 기술 트위터를 크롤링해 옵니다.
+				4. 블로그 입력 시 엄선된 기술블로그들의 rss 피드를 얻어옵니다.
+				4. 트위터, 트윗 입력 시 엄선된 트위터를 크롤링해 옵니다.
 				5. git 사용자id(Ex - git hero0926) 입력 시 오늘의 커밋상황을 안내해 드립니다.
 				6. 근무자 입력 시 현재 슬랙에 로그인 해 있는 사용자를 안내해 드립니다.`,
 			}
@@ -670,7 +692,7 @@ func (s *SlackListener) PostByTime(env envConfig) {
 				attachment := slack.Attachment{
 
 					Color:      "#ff0033",
-					AuthorName: "퇴근알림",
+					AuthorName: "긴급 알림",
 					Title:      "퇴근 할 시간인데도 커밋을 하지 않았습니다!",
 					Text:       "뭔가 하고 가시던지 집에 가서 해보세요!",
 				}
@@ -687,9 +709,9 @@ func (s *SlackListener) PostByTime(env envConfig) {
 				attachment := slack.Attachment{
 
 					Color:      "#ff0033",
-					AuthorName: "퇴근알림",
+					AuthorName: "수고의 알림",
 					Title:      "퇴근 할 시간입니다!",
-					Text: `오늘도 수고하셨어요.` +
+					Text: `오늘도 수고하셨어요. ` +
 						"오늘은" + fmt.Sprint(c) + "개의 커밋을 하였습니다.",
 				}
 				params := slack.PostMessageParameters{
@@ -705,7 +727,7 @@ func (s *SlackListener) PostByTime(env envConfig) {
 
 				Color:      "#ff0033",
 				AuthorName: "퇴근알림",
-				Title:      "퇴근 할 시간입니다!",
+				Title:      "퇴근 할 시간입니다! ",
 				Text:       "오늘도 수고하셨어요.",
 			}
 			params := slack.PostMessageParameters{
