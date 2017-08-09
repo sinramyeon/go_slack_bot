@@ -91,8 +91,7 @@ func GetUserTweets(many int, id string, client *twitter.Client) []twitter.Tweet 
 
 }
 
-// 트윗 저장용
-
+// 트윗 저장용(나중에 go 루틴으로 블로그, 트윗들 저장 매일마다 해놓아도 괜찮을 듯 함....)
 func AllTweets(client *twitter.Client) map[string]string {
 
 	tweetlist := make(map[string]string)
@@ -116,19 +115,6 @@ func AllTweets(client *twitter.Client) map[string]string {
 	}
 
 	return tweetlist
-}
-
-// Rand 용(정말 매우 귀찮기 그지없음)
-// map 넣을 시 랜덤 k, v을 반환... 왜 고랭에는 셔플이 없는거지?...
-func selRand(m map[string]string) (k string, v string) {
-	i := rand.Intn(len(m))
-	for k := range m {
-		if i == 0 {
-			return k, m[k]
-		}
-		i--
-	}
-	panic("never")
 }
 
 // rss 블로그 읽기
@@ -454,4 +440,17 @@ func after(value string, a string) string {
 		return ""
 	}
 	return value[adjustedPos:len(value)]
+}
+
+// Rand 용(정말 매우 귀찮기 그지없음)
+// map 넣을 시 랜덤 k, v을 반환... 왜 고랭에는 셔플이 없는거지?...
+func selRand(m map[string]string) (k string, v string) {
+	i := rand.Intn(len(m))
+	for k := range m {
+		if i == 0 {
+			return k, m[k]
+		}
+		i--
+	}
+	panic("never")
 }

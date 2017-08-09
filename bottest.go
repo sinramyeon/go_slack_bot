@@ -70,6 +70,9 @@ func _main(args []string) int {
 		}
 	}()
 
+	// 채널형 고루틴으로 변경?????
+	// 블로그, 트위터를 그런식으로?????(예비 자료 크롤링?)
+
 	// 유저 메시지 입력 외에도 이벤트 만들만한 것 생각해 보기...
 
 	// 1. 설정
@@ -156,7 +159,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv twit
 	if !(strings.HasPrefix(receivedMsg, fmt.Sprintf("<@%s> ", s.botID))) {
 
 		// 봇이 한 말이면 무시하자!
-		if strings.Contains(ev.Msg.Username, "ITBOT") {
+		if strings.Contains(ev.Msg.Username, "go돌이") {
 			log.Println("봇이 한 대화라 무시 했어요.")
 			return nil
 		}
@@ -346,23 +349,30 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv twit
 
 			if !b {
 
-				attachment := slack.Attachment{
+				if c == 1 {
 
-					Color:     "#e20000",
-					Title:     id + "님께서는 아직 커밋하신 적이 없습니다!",
-					TitleLink: "https://github.com/" + id,
-					Text:      "내용을 확인 해 주세요",
+					s.client.PostMessage(ev.Channel, "그런 유저가 없어요...", slack.PostMessageParameters{})
+
+				} else {
+
+					attachment := slack.Attachment{
+
+						Color:     "#e20000",
+						Title:     id + "님께서는 아직 커밋하신 적이 없습니다!",
+						TitleLink: "https://github.com/" + id,
+						Text:      "내용을 확인 해 주세요",
+					}
+
+					params := slack.PostMessageParameters{
+
+						Attachments: []slack.Attachment{
+							attachment,
+						},
+					}
+
+					s.client.PostMessage(ev.Channel, "", params)
+
 				}
-
-				params := slack.PostMessageParameters{
-
-					Attachments: []slack.Attachment{
-						attachment,
-					},
-				}
-
-				s.client.PostMessage(ev.Channel, "", params)
-
 			} else {
 
 				attachment := slack.Attachment{
@@ -428,9 +438,9 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv twit
 				2. 기사, 뉴스, 소식 키워드 입력 시 오늘의 IT 뉴스라인을 보실 수 있습니다.
 				3. 오키, 옼희 입력 시 오키 주간 기술 트렌드를 보실 수 있습니다.
 				4. 블로그 입력 시 엄선된 기술블로그들의 rss 피드를 얻어옵니다.
-				4. 트위터, 트윗 입력 시 엄선된 트위터를 크롤링해 옵니다.
-				5. git 사용자id(Ex - git hero0926) 입력 시 오늘의 커밋상황을 안내해 드립니다.
-				6. 근무자 입력 시 현재 슬랙에 로그인 해 있는 사용자를 안내해 드립니다.`,
+				5. 트위터, 트윗 입력 시 엄선된 트위터를 크롤링해 옵니다.
+				6. git 사용자id(Ex - git hero0926) 입력 시 오늘의 커밋상황을 안내해 드립니다.
+				7. 근무자 입력 시 현재 슬랙에 로그인 해 있는 사용자를 안내해 드립니다.`,
 			}
 			params := slack.PostMessageParameters{
 				Attachments: []slack.Attachment{
@@ -460,6 +470,12 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv twit
 
 		log.Println("봇에게 멘션했을 시.")
 
+		// 봇이 한 말이면 무시하자!
+		if strings.Contains(ev.Msg.Username, "go돌이") {
+			log.Println("봇이 한 대화라 무시 했어요.")
+			return nil
+		}
+
 		// select 메뉴
 		if strings.Contains(receivedMsg, "도움") {
 
@@ -482,12 +498,16 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv twit
 								Value: "ITNews",
 							},
 							{
-								Text:  "OKKY",
+								Text:  "OKKY 읽기",
 								Value: "OKKY",
 							},
 							{
-								Text:  "TWITTER",
+								Text:  "TWITTER 읽기",
 								Value: "TWITTER",
+							},
+							{
+								Text:  "기술 블로그 읽기",
+								Value: "BLOG",
 							},
 							{
 								Text:  "도움말",
@@ -509,10 +529,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv twit
 				return fmt.Errorf("failed to post message: %s", err)
 			}
 
-		}
-
-		// 버튼
-		if strings.Contains(receivedMsg, "버튼") {
+		} else if strings.Contains(receivedMsg, "버튼") {
 
 			log.Println("버튼테스트")
 
@@ -563,6 +580,8 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv twit
 				return fmt.Errorf("failed to post message: %s", err)
 			}
 
+		} else {
+			s.client.PostMessage(ev.Channel, "무엇을 도와드릴까요? 도움, 도움말 이라고 입력해보세요~", slack.PostMessageParameters{})
 		}
 
 	}

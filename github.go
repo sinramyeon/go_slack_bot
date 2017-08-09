@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/google/go-github/github"
@@ -34,7 +34,8 @@ func getGitCommit(id string) (b bool, commit int) {
 	// 유저 이벤트 받기
 	events, _, err := client.Activity.ListEventsPerformedByUser(context.Background(), id, true, nil)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
+		return false, 1
 	}
 
 	for _, v := range events {
