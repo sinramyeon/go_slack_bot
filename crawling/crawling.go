@@ -16,6 +16,7 @@ https://github.com/PuerkitoBio/goquery
 package crawling
 
 import (
+	"log"
 	"math/rand"
 	"strings"
 	"time"
@@ -124,7 +125,8 @@ func RssScrape() map[string]string {
 
 	defer func() {
 		if err := recover(); err != nil {
-			return
+			log.Println(err)
+			recover()
 		}
 	}()
 
@@ -137,7 +139,6 @@ func RssScrape() map[string]string {
 		"http://thoughts.chkwon.net/feed/",
 		"http://feeds.feedburner.com/goodhyun",
 		"http://nolboo.github.io/feed.xml",
-		"http://html5lab.kr/feed/",
 		"http://www.kmshack.kr/rss",
 		"http://rss.egloos.com/blog/minjang",
 		"http://bomjun.tistory.com/rss",
@@ -282,16 +283,24 @@ func RssScrape() map[string]string {
 
 	rand.Seed(time.Now().UnixNano())
 
-	for i := 0; i < 5; i++ {
+	for len(rsslist) < 5 {
 
 		//rssURL 중 하나를 골라다
 		choosen := rssURL[rand.Intn(len(rssURL)-1)]
-
 		//파징 하기
 		fp := gofeed.NewParser()
-		feed, _ := fp.ParseURL(choosen)
+		feed, err := fp.ParseURL(choosen)
+
+		if err != nil {
+			panic(err)
+		}
 
 		rsslist[feed.Items[0].Title] = feed.Items[0].Link
+	}
+
+	if len(rsslist) < 5 {
+
+		RssScrape()
 	}
 
 	return rsslist

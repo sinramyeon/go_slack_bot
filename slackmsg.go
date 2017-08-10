@@ -11,6 +11,8 @@ import (
 	"github.com/nlopes/slack"
 )
 
+// 1. go 루틴 더 더하기;?(따로 갖고오기? 지금은 함수실행시 가져옴)
+
 // 메시지 받고 보내기
 func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv envsetting.TwitterConfig) error {
 
@@ -31,6 +33,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv envs
 			log.Println("봇이 한 대화라 무시 했어요.")
 			return nil
 		}
+
 		s.client.PostMessage(ev.Channel, `¯\_(ツ)_/¯`, slack.PostMessageParameters{})
 	}
 
@@ -52,25 +55,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv envs
 
 			if !(len(m) == 0) {
 
-				for k, v := range m {
-
-					attachment := slack.Attachment{
-
-						Color: "#cc1512",
-						Title: k,
-						Text:  v,
-					}
-
-					params := slack.PostMessageParameters{
-
-						Attachments: []slack.Attachment{
-							attachment,
-						},
-					}
-
-					s.client.PostMessage(ev.Channel, "", params)
-
-				}
+				PostMessage(m, s, ev, "cc1512")
 
 			} else {
 				s.client.PostMessage(ev.Channel, "알 수 없는 에러가 발생했습니다. 다시 시도해 주세요.", slack.PostMessageParameters{})
@@ -88,25 +73,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv envs
 				s.client.PostMessage(ev.Channel, "알 수 없는 에러가 발생했습니다. 다시 시도해 주세요.", slack.PostMessageParameters{})
 			} else {
 
-				for k, v := range m {
-
-					attachment := slack.Attachment{
-
-						Color: "#104293",
-						Title: k,
-						Text:  v,
-					}
-
-					params := slack.PostMessageParameters{
-
-						Attachments: []slack.Attachment{
-							attachment,
-						},
-					}
-
-					s.client.PostMessage(ev.Channel, "", params)
-
-				}
+				PostMessage(m, s, ev, "104293")
 			}
 
 		}
@@ -123,25 +90,7 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv envs
 				s.client.PostMessage(ev.Channel, "알 수 없는 에러가 발생했습니다. 다시 시도해 주세요.", slack.PostMessageParameters{})
 			} else {
 
-				for k, v := range m {
-
-					attachment := slack.Attachment{
-
-						Color: "#2a4f2e",
-						Title: k,
-						Text:  v,
-					}
-
-					params := slack.PostMessageParameters{
-
-						Attachments: []slack.Attachment{
-							attachment,
-						},
-					}
-
-					s.client.PostMessage(ev.Channel, "", params)
-
-				}
+				PostMessage(m, s, ev, "2a4f2e")
 			}
 		}
 
@@ -156,24 +105,8 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv envs
 			if len(m) == 0 {
 				s.client.PostMessage(ev.Channel, "알 수 없는 에러가 발생했습니다. 다시 시도해 주세요.", slack.PostMessageParameters{})
 			} else {
-				for k, v := range m {
 
-					attachment := slack.Attachment{
-
-						Color: "#42c7d6",
-						Title: k,
-						Text:  v,
-					}
-
-					params := slack.PostMessageParameters{
-
-						Attachments: []slack.Attachment{
-							attachment,
-						},
-					}
-
-					s.client.PostMessage(ev.Channel, "", params)
-				}
+				PostMessage(m, s, ev, "42c7d6")
 			}
 		}
 
@@ -479,19 +412,7 @@ func (s *SlackListener) PostByTime(env envsetting.EnvConfig) {
 
 		switch hour {
 		case 12:
-			attachment := slack.Attachment{
-
-				Color:      "#a470e0",
-				AuthorName: "점심알림",
-				Title:      "점심 식사 하시러 갈 시간입니다!",
-				Text:       "오늘도 맛있는 점심 되세요.",
-			}
-			params := slack.PostMessageParameters{
-				Attachments: []slack.Attachment{
-					attachment,
-				},
-			}
-			s.client.PostMessage(env.ChannelID, "", params)
+			PostTimeMessage(s, env, "a470e0", "점심알림", "점심 식사 하시러 갈 시간입니다!", "오늘도 맛있는 점심 되세요.")
 
 			// 시간별 커밋 알림봇 구현
 		case 14:
@@ -621,20 +542,7 @@ func (s *SlackListener) PostByTime(env envsetting.EnvConfig) {
 				s.client.PostMessage("U6DKDJMPV", "", params)
 			}
 
-			attachment := slack.Attachment{
-
-				Color:      "#ff0033",
-				AuthorName: "퇴근알림",
-				Title:      "퇴근 할 시간입니다! ",
-				Text:       "오늘도 수고하셨어요.",
-			}
-			params := slack.PostMessageParameters{
-				Attachments: []slack.Attachment{
-					attachment,
-				},
-			}
-
-			s.client.PostMessage(env.ChannelID, "", params)
+			PostTimeMessage(s, env, "ff0033", "퇴근알림", "퇴근 할 시간입니다!", "오늘도 수고하셨어요.")
 
 			// 야근봇 구현
 			// 퇴근 후 일정시간 자동 백업 등을 수행할 수 있을 것 같음...
@@ -649,21 +557,50 @@ func (s *SlackListener) PostByTime(env envsetting.EnvConfig) {
 				}
 			}
 
-			attachment := slack.Attachment{
-
-				Color:      "#63294e",
-				Pretext:    "아직 불철주야 일하고 계신 분",
-				AuthorName: "현재 근무자",
-				Title:      strings.Join(logineduser, "\n"),
-				Text:       "님께서" + fmt.Sprint(hour) + "시까지 수고해주시고 계십니다.",
-			}
-			params := slack.PostMessageParameters{
-				Attachments: []slack.Attachment{
-					attachment,
-				},
-			}
-			s.client.PostMessage(env.ChannelID, "", params)
+			PostTimeMessage(s, env, "63294e", "아직 불철주야 일하고 계신 분", strings.Join(logineduser, "\n"), "님께서"+fmt.Sprint(hour)+"시까지 수고해주시고 계십니다.")
 
 		}
 	}
+}
+
+// 봇 답장용 메서드
+func PostMessage(m map[string]string, s *SlackListener, ev *slack.MessageEvent, color string) {
+
+	for k, v := range m {
+
+		attachment := slack.Attachment{
+
+			Color: "#" + color,
+			Title: k,
+			Text:  v,
+		}
+
+		params := slack.PostMessageParameters{
+
+			Attachments: []slack.Attachment{
+				attachment,
+			},
+		}
+
+		s.client.PostMessage(ev.Channel, "", params)
+
+	}
+
+}
+
+func PostTimeMessage(s *SlackListener, env envsetting.EnvConfig, color string, authorname string, title string, text string) {
+
+	attachment := slack.Attachment{
+
+		Color:      "#" + color,
+		AuthorName: authorname,
+		Title:      title,
+		Text:       text,
+	}
+	params := slack.PostMessageParameters{
+		Attachments: []slack.Attachment{
+			attachment,
+		},
+	}
+	s.client.PostMessage(env.ChannelID, "", params)
 }
