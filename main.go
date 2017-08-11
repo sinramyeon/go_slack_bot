@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	"slack_test/envsetting"
-	"slack_test/util"
 
 	"github.com/nlopes/slack"
 )
@@ -31,8 +30,6 @@ func main() {
 }
 
 func _main(args []string) int {
-
-	util.GetGitCommit("hero0926")
 
 	defer func() {
 		if err := recover(); err != nil {
@@ -79,6 +76,7 @@ func _main(args []string) int {
 }
 
 func (s *SlackListener) ListenAndResponse(tweetenv envsetting.TwitterConfig) {
+
 	rtm := s.client.NewRTM()
 	go rtm.ManageConnection()
 

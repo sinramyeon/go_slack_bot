@@ -11,8 +11,6 @@ import (
 	"github.com/nlopes/slack"
 )
 
-// 1. go 루틴 더 더하기;?(따로 갖고오기? 지금은 함수실행시 가져옴)
-
 // 메시지 받고 보내기
 func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv envsetting.TwitterConfig) error {
 
@@ -110,100 +108,10 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv envs
 			}
 		}
 
-		// 바. 깃허브 입력 시(최신유행 GO 오픈소스 찾기)
-		/*
-			if strings.Contains(receivedMsg, "깃허브") || strings.Contains(receivedMsg, "깃헙") {
-
-				log.Println("깃허브 크롤링 시.")
-
-				m := GoScrape()
-
-				log.Println(m)
-
-				for k, v := range m {
-
-					title := strings.TrimPrefix(k, "/")
-					title_link := "https://github.com" + strings.TrimSpace(k)
-
-					attachment := slack.Attachment{
-
-						Color:     "#f7b7ce",
-						Title:     title,
-						TitleLink: title_link,
-						Text:      v,
-					}
-
-					params := slack.PostMessageParameters{
-
-						Attachments: []slack.Attachment{
-							attachment,
-						},
-					}
-
-					s.client.PostMessage(ev.Channel, "", params)
-
-				}
-
-			}
-		*/
-
 		// 4. git 사용자이름 입력 시, 오늘의 깃허브 커밋여부 반환
 
 		if strings.HasPrefix(receivedMsg, "git") {
-
-			log.Println("깃 커밋 확인 시.")
-			id := receivedMsg[strings.Index(receivedMsg, " ")+1:]
-			strings.TrimSpace(id)
-
-			// 사용자가 커밋을 하지 않았을 경우
-
-			b, c := util.GetGitCommit(id)
-
-			if !b {
-
-				if c == 1 {
-
-					s.client.PostMessage(ev.Channel, "그런 유저가 없어요...", slack.PostMessageParameters{})
-
-				} else {
-
-					attachment := slack.Attachment{
-
-						Color:     "#e20000",
-						Title:     id + "님께서는 아직 커밋하신 적이 없습니다!",
-						TitleLink: "https://github.com/" + id,
-						Text:      "내용을 확인 해 주세요",
-					}
-
-					params := slack.PostMessageParameters{
-
-						Attachments: []slack.Attachment{
-							attachment,
-						},
-					}
-
-					s.client.PostMessage(ev.Channel, "", params)
-
-				}
-			} else {
-
-				attachment := slack.Attachment{
-
-					Color:     "#e20000",
-					Title:     id + "님께서는 오늘 " + fmt.Sprint(c) + "개의 커밋을 했습니다!",
-					TitleLink: "https://github.com/" + id,
-					Text:      "앞으로도 수고해 주세요",
-				}
-
-				params := slack.PostMessageParameters{
-
-					Attachments: []slack.Attachment{
-						attachment,
-					},
-				}
-
-				s.client.PostMessage(ev.Channel, "", params)
-			}
+			GitCommitMessage(receivedMsg, s, ev)
 		}
 
 		// 5. 근무자 입력 시, 현재 슬랙에 로그인 해 있는 상태인 사용자 반환
@@ -237,45 +145,21 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv envs
 		// 6. 도움 입력 시, 도움말을 전송
 
 		if strings.Contains(receivedMsg, "도움") {
-			log.Println("도움말!")
 
-			attachment := slack.Attachment{
-
-				Color: "#296346",
-				Title: "봇 사용 커맨드",
-				Text: `안녕하세요? IT봇입니다.
-				IT봇 사용을 위해서 참고해주세요~
-				1. @it_trend_go3 도움말 기능(개발중)
-				2. @it_trend_go3 버튼 기능(개발중)
-				2. 기사, 뉴스, 소식 키워드 입력 시 오늘의 IT 뉴스라인을 보실 수 있습니다.
-				3. 오키, 옼희 입력 시 오키 주간 기술 트렌드를 보실 수 있습니다.
-				4. 블로그 입력 시 엄선된 기술블로그들의 rss 피드를 얻어옵니다.
-				5. 트위터, 트윗 입력 시 엄선된 트위터를 크롤링해 옵니다.
-				6. git 사용자id(Ex - git hero0926) 입력 시 오늘의 커밋상황을 안내해 드립니다.
-				7. 근무자 입력 시 현재 슬랙에 로그인 해 있는 사용자를 안내해 드립니다.`,
-			}
-			params := slack.PostMessageParameters{
-				Attachments: []slack.Attachment{
-					attachment,
-				},
-			}
-			s.client.PostMessage(ev.Channel, "", params)
+			GetHelp(s, ev)
 
 		}
 
-		/* 테스트용 메서드~
-		if strings.Contains(receivedMsg, "테스트") {
-			params := slack.PostMessageParameters{
-				Attachments: []slack.Attachment{},
-			}
+		if strings.Contains(receivedMsg, "책") || strings.Contains(receivedMsg, "무료") || strings.Contains(receivedMsg, "공짜") {
 
-			s.client.PostMessage(userID, "디엠 테스트", params)
+			Freebook(s, ev.Channel)
+
 		}
-		*/
 
 		return nil
 
 	}
+
 	// 봇에게 멘션 했을 시
 
 	if strings.HasPrefix(receivedMsg, fmt.Sprintf("<@%s> ", s.botID)) {
@@ -291,89 +175,94 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv envs
 		// select 메뉴
 		if strings.Contains(receivedMsg, "도움") {
 
-			attachment := slack.Attachment{
+			/*
 
-				Text:       "무엇을 도와드릴까요? :newspaper: ",
-				Color:      "#f9a41b",
-				CallbackID: "news",
-				Actions: []slack.AttachmentAction{
+				attachment := slack.Attachment{
 
-					{
+					Text:       "무엇을 도와드릴까요? :newspaper: ",
+					Color:      "#f9a41b",
+					CallbackID: "news",
+					Actions: []slack.AttachmentAction{
 
-						Name: actionSelect,
-						Type: "select",
+						{
 
-						Options: []slack.AttachmentActionOption{
+							Name: actionSelect,
+							Type: "select",
 
-							{
-								Text:  "IT 기사 읽기",
-								Value: "ITNews",
-							},
-							{
-								Text:  "OKKY 읽기",
-								Value: "OKKY",
-							},
-							{
-								Text:  "TWITTER 읽기",
-								Value: "TWITTER",
-							},
-							{
-								Text:  "기술 블로그 읽기",
-								Value: "BLOG",
-							},
-							{
-								Text:  "도움말",
-								Value: "HELP",
+							Options: []slack.AttachmentActionOption{
+
+								{
+									Text:  "IT 기사 읽기",
+									Value: "ITNews",
+								},
+								{
+									Text:  "OKKY 읽기",
+									Value: "OKKY",
+								},
+								{
+									Text:  "TWITTER 읽기",
+									Value: "TWITTER",
+								},
+								{
+									Text:  "기술 블로그 읽기",
+									Value: "BLOG",
+								},
+								{
+									Text:  "도움말",
+									Value: "HELP",
+								},
 							},
 						},
 					},
-				},
-			}
+				}
 
-			params := slack.PostMessageParameters{
+				params := slack.PostMessageParameters{
 
-				Attachments: []slack.Attachment{
-					attachment,
-				},
-			}
+					Attachments: []slack.Attachment{
+						attachment,
+					},
+				}
 
-			if _, _, err := s.client.PostMessage(ev.Channel, "", params); err != nil {
-				return fmt.Errorf("failed to post message: %s", err)
-			}
+				if _, _, err := s.client.PostMessage(ev.Channel, "", params); err != nil {
+					return fmt.Errorf("failed to post message: %s", err)
+				}
+			*/
 
-		} else if strings.Contains(receivedMsg, "버튼") {
+			GetHelp(s, ev)
 
-			log.Println("버튼테스트")
+		} else if strings.Contains(receivedMsg, "점심") {
+
+			log.Println("오늘 점심은 뭘로 드실래요?")
 
 			attachment := slack.Attachment{
 
-				Text:       "버튼 테스트",
+				Text:       "오늘의 점심",
 				Color:      "#f9a41b",
 				CallbackID: "button",
 				Actions: []slack.AttachmentAction{
 
 					{
-						Name:  "game",
-						Text:  "개발",
+						Name:  "lunch",
+						Text:  "한솥",
 						Type:  "button",
-						Value: "chess",
+						Value: "hansot",
 					},
 					{
-						Name:  "game",
-						Text:  "테스트",
+						Name:  "lunch",
+						Text:  "샐러디",
 						Type:  "button",
-						Value: "chess2",
+						Value: "salady",
 					},
 					{
-						Name:  "game",
-						Text:  "누르지마세욧",
+						Name:  "lunch",
+						Text:  "따로 먹을래요",
 						Type:  "button",
-						Value: "chess3",
+						Value: "myown",
 						Style: "danger",
 						Confirm: &slack.ConfirmationField{
 
-							Title:       "ㅠㅠ",
-							Text:        "서버와 연결 후 동작합니다",
+							Title:       "오늘은 따로 드시겠어요?",
+							Text:        "도시락 멤버에서 빼 드립니다.",
 							OkText:      "그래",
 							DismissText: "아니",
 						},
@@ -411,6 +300,10 @@ func (s *SlackListener) PostByTime(env envsetting.EnvConfig) {
 		hour, _, _ := n.Clock()
 
 		switch hour {
+		case 10:
+
+			Freebook(s, env.ChannelID)
+
 		case 12:
 			PostTimeMessage(s, env, "a470e0", "점심알림", "점심 식사 하시러 갈 시간입니다!", "오늘도 맛있는 점심 되세요.")
 
@@ -603,4 +496,116 @@ func PostTimeMessage(s *SlackListener, env envsetting.EnvConfig, color string, a
 		},
 	}
 	s.client.PostMessage(env.ChannelID, "", params)
+}
+
+// 깃 커밋 확인
+
+func GitCommitMessage(receivedMsg string, s *SlackListener, ev *slack.MessageEvent) {
+
+	log.Println("깃 커밋 확인 시.")
+	id := receivedMsg[strings.Index(receivedMsg, " ")+1:]
+	strings.TrimSpace(id)
+
+	// 사용자가 커밋을 하지 않았을 경우
+
+	b, c := util.GetGitCommit(id)
+
+	if !b {
+
+		if c == 1 {
+
+			s.client.PostMessage(ev.Channel, "그런 유저가 없어요...", slack.PostMessageParameters{})
+
+		} else {
+
+			attachment := slack.Attachment{
+
+				Color:     "#e20000",
+				Title:     id + "님께서는 아직 커밋하신 적이 없습니다!",
+				TitleLink: "https://github.com/" + id,
+				Text:      "내용을 확인 해 주세요",
+			}
+
+			params := slack.PostMessageParameters{
+
+				Attachments: []slack.Attachment{
+					attachment,
+				},
+			}
+
+			s.client.PostMessage(ev.Channel, "", params)
+
+		}
+	} else {
+
+		attachment := slack.Attachment{
+
+			Color:     "#e20000",
+			Title:     id + "님께서는 오늘 " + fmt.Sprint(c) + "개의 커밋을 했습니다!",
+			TitleLink: "https://github.com/" + id,
+			Text:      "앞으로도 수고해 주세요",
+		}
+
+		params := slack.PostMessageParameters{
+
+			Attachments: []slack.Attachment{
+				attachment,
+			},
+		}
+
+		s.client.PostMessage(ev.Channel, "", params)
+	}
+
+}
+
+// 도움말
+
+func GetHelp(s *SlackListener, ev *slack.MessageEvent) {
+	log.Println("도움말!")
+
+	attachment := slack.Attachment{
+
+		Color: "#296346",
+		Title: "봇 사용 커맨드",
+		Text: `안녕하세요? IT봇입니다.
+				IT봇 사용을 위해서 참고해주세요~
+				1. @it_trend_go3 도움말 기능(개발중)
+				2. @it_trend_go3 버튼 기능(개발중)
+				2. 기사, 뉴스, 소식 키워드 입력 시 오늘의 IT 뉴스라인을 보실 수 있습니다.
+				3. 오키, 옼희 입력 시 오키 주간 기술 트렌드를 보실 수 있습니다.
+				4. 블로그 입력 시 엄선된 기술블로그들의 rss 피드를 얻어옵니다.
+				5. 트위터, 트윗 입력 시 엄선된 트위터를 크롤링해 옵니다.
+				6. git 사용자id(Ex - git hero0926) 입력 시 오늘의 커밋상황을 안내해 드립니다.
+				7. 근무자 입력 시 현재 슬랙에 로그인 해 있는 사용자를 안내해 드립니다.
+				8. 무료, 공짜, 책 입력 시 오늘의 packt 사 무료 ebook을 알려드립니다.`,
+	}
+	params := slack.PostMessageParameters{
+		Attachments: []slack.Attachment{
+			attachment,
+		},
+	}
+	s.client.PostMessage(ev.Channel, "", params)
+}
+
+// 무료 책
+
+func Freebook(s *SlackListener, channel string) {
+
+	attachment := slack.Attachment{
+
+		Color:     "#92f1f4",
+		Title:     crawling.PacktFreeBook(),
+		TitleLink: "https://www.packtpub.com/packt/offers/free-learning",
+		Text:      "오늘의 무료 책을 득템하세요!",
+	}
+
+	params := slack.PostMessageParameters{
+
+		Attachments: []slack.Attachment{
+			attachment,
+		},
+	}
+
+	s.client.PostMessage(channel, "", params)
+
 }

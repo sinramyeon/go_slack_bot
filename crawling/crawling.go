@@ -412,3 +412,16 @@ func NewsScrape() map[string]string {
 	})
 	return newslist
 }
+
+func PacktFreeBook() string {
+
+	doc, _ := goquery.NewDocument("https://www.packtpub.com/packt/offers/free-learning")
+	freebook := doc.Find(".dotd-title").Find("h2").Text()
+	strings.TrimLeft(freebook, " ")
+	strings.TrimSpace(freebook)
+	strings.Trim(freebook, " ")
+	strings.TrimPrefix(freebook, " ")
+	strings.Replace(freebook, " ", "", -1)
+
+	return freebook
+}
