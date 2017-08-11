@@ -66,6 +66,10 @@ func _main(args []string) int {
 	go slackListener.ListenAndResponse(tweetenv)
 	go slackListener.PostByTime(env)
 
+	http.Handle("/interaction", interactionHandler{
+		verificationToken: env.VerificationToken,
+	})
+
 	log.Printf("[INFO] Server listening on :%s", env.Port)
 	if err := http.ListenAndServe(":"+env.Port, nil); err != nil {
 		log.Printf("[ERROR] %s", err)

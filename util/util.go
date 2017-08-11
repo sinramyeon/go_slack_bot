@@ -46,6 +46,18 @@ func after(value string, a string) string {
 	return value[adjustedPos:len(value)]
 }
 
+func TrimTrim(s string) string {
+
+	strings.Trim(s, " ")
+	strings.TrimLeft(s, " ")
+	strings.TrimPrefix(s, " ")
+	strings.TrimRight(s, " ")
+	strings.TrimSpace(s)
+
+	return s
+
+}
+
 // Rand 용(정말 매우 귀찮기 그지없음)
 // map 넣을 시 랜덤 k, v을 반환... 왜 고랭에는 셔플이 없는거지?...
 func SelRand(m map[string]string) (k string, v string) {
@@ -80,4 +92,12 @@ func GetHour() *time.Ticker {
 		}
 	}()
 	return t
+}
+
+func GetDay() string {
+
+	n := time.Now()
+
+	return n.Weekday().String()
+
 }

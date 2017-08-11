@@ -18,7 +18,6 @@ package crawling
 import (
 	"log"
 	"math/rand"
-	"strings"
 	"time"
 
 	"slack_test/envsetting"
@@ -230,7 +229,6 @@ func RssScrape() map[string]string {
 		"http://blrunner.com/rss",
 		"http://rss.egloos.com/blog/benelog",
 		"http://www.sysnet.pe.kr/rss/getrss.aspx?boardId=635954948",
-		"http://health20.kr/rss",
 		"http://bcho.tistory.com/rss",
 		"http://sungmooncho.com/feed/",
 		"http://blog.kivol.net/rss",
@@ -248,7 +246,6 @@ func RssScrape() map[string]string {
 		"http://blog.dahlia.kr/rss",
 		"http://blog.fupfin.com/?feed=rss2",
 		"http://xrath.com/feed/",
-		"http://pragmaticstory.com/feed/",
 		"http://rss.egloos.com/blog/recipes",
 		"http://iam-hs.com/rss",
 
@@ -292,6 +289,8 @@ func RssScrape() map[string]string {
 		feed, err := fp.ParseURL(choosen)
 
 		if err != nil {
+
+			log.Println(choosen)
 			panic(err)
 		}
 
@@ -365,10 +364,9 @@ func GoScrape() map[string]string {
 		} else {
 			// Trim 시리즈 적용하는 모듈 나중에 만들어야겠음(너무도 귀찮음)
 			title := s.Find("h3 a").AttrOr("href", "없음")
-			strings.TrimSpace(title)
+			util.TrimTrim(title)
 			desc := s.Find(".py-1 p").Text()
-			strings.TrimSpace(desc)
-			strings.TrimLeft(desc, " ")
+			util.TrimTrim(desc)
 
 			githublist[title] = desc
 			forLoop++
@@ -400,10 +398,9 @@ func NewsScrape() map[string]string {
 			return false
 		} else {
 			title := s.Find("ul li a").Text()
-			strings.TrimSpace(title)
+			util.TrimTrim(title)
 			url := s.Find("ul li a").AttrOr("href", "없음")
-			strings.TrimSpace(url)
-			strings.TrimLeft(url, " ")
+			util.TrimTrim(url)
 
 			newslist[title] = url
 			forLoop++
@@ -417,11 +414,7 @@ func PacktFreeBook() string {
 
 	doc, _ := goquery.NewDocument("https://www.packtpub.com/packt/offers/free-learning")
 	freebook := doc.Find(".dotd-title").Find("h2").Text()
-	strings.TrimLeft(freebook, " ")
-	strings.TrimSpace(freebook)
-	strings.Trim(freebook, " ")
-	strings.TrimPrefix(freebook, " ")
-	strings.Replace(freebook, " ", "", -1)
+	util.TrimTrim(freebook)
 
 	return freebook
 }

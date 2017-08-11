@@ -227,7 +227,6 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv envs
 					return fmt.Errorf("failed to post message: %s", err)
 				}
 			*/
-
 			GetHelp(s, ev)
 
 		} else if strings.Contains(receivedMsg, "점심") {
@@ -296,6 +295,9 @@ func (s *SlackListener) PostByTime(env envsetting.EnvConfig) {
 
 	// 정확히 n시 0분 0초가 딱 정시 되는 순간 작동!
 	for n := range util.GetHour().C {
+
+		day := util.GetDay()
+		fmt.Println(day)
 
 		hour, _, _ := n.Clock()
 
@@ -504,7 +506,7 @@ func GitCommitMessage(receivedMsg string, s *SlackListener, ev *slack.MessageEve
 
 	log.Println("깃 커밋 확인 시.")
 	id := receivedMsg[strings.Index(receivedMsg, " ")+1:]
-	strings.TrimSpace(id)
+	util.TrimTrim(id)
 
 	// 사용자가 커밋을 하지 않았을 경우
 
