@@ -297,14 +297,23 @@ func (s *SlackListener) PostByTime(env envsetting.EnvConfig) {
 	for n := range util.GetHour().C {
 
 		day := util.GetDay()
-		fmt.Println(day)
-
 		hour, _, _ := n.Clock()
 
 		switch hour {
-		case 10:
+
+		case 9:
 
 			Freebook(s, env.ChannelID)
+
+		case 10:
+
+			if day == "Monday" {
+				s.client.PostMessageTo(env.ChannelID, "수습평가표 쓰세요", "U6DKDJMPV", slack.PostMessageParameters{})
+			}
+
+			if day == "Thursday" {
+				s.client.PostMessageTo(env.ChannelID, "주간보고서 쓰세요", "U6DKDJMPV", slack.PostMessageParameters{})
+			}
 
 		case 12:
 			PostTimeMessage(s, env, "a470e0", "점심알림", "점심 식사 하시러 갈 시간입니다!", "오늘도 맛있는 점심 되세요.")
@@ -441,19 +450,21 @@ func (s *SlackListener) PostByTime(env envsetting.EnvConfig) {
 
 			// 야근봇 구현
 			// 퇴근 후 일정시간 자동 백업 등을 수행할 수 있을 것 같음...
-		case 19, 20, 21:
 
-			Users, _ := s.client.GetUsers()
-			var logineduser []string
+			/*
+				case 19, 20, 21:
 
-			for _, v := range Users {
-				if v.Presence == "active" && v.IsBot == false {
-					logineduser = append(logineduser, v.Name)
-				}
-			}
+					Users, _ := s.client.GetUsers()
+					var logineduser []string
 
-			PostTimeMessage(s, env, "63294e", "아직 불철주야 일하고 계신 분", strings.Join(logineduser, "\n"), "님께서"+fmt.Sprint(hour)+"시까지 수고해주시고 계십니다.")
+					for _, v := range Users {
+						if v.Presence == "active" && v.IsBot == false {
+							logineduser = append(logineduser, v.Name)
+						}
+					}
 
+					PostTimeMessage(s, env, "63294e", "아직 불철주야 일하고 계신 분", strings.Join(logineduser, "\n"), "님께서"+fmt.Sprint(hour)+"시까지 수고해주시고 계십니다.")
+			*/
 		}
 	}
 }
