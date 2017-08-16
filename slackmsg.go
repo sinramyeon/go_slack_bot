@@ -623,7 +623,7 @@ func Freebook(s *SlackListener, channel string) {
 		Color:     "#92f1f4",
 		Title:     crawling.PacktFreeBook(),
 		TitleLink: "https://www.packtpub.com/packt/offers/free-learning",
-		Text:      "오늘의 무료 책을 득템하세요!",
+		Text:      "안녕하세요! 오늘의 무료 책을 득템하세요!",
 	}
 
 	params := slack.PostMessageParameters{
