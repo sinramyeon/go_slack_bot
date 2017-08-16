@@ -94,10 +94,34 @@ func GetHour() *time.Ticker {
 	return t
 }
 
+// 오늘 날짜 얻기
+
 func GetDay() string {
 
 	n := time.Now()
 
 	return n.Weekday().String()
+
+}
+
+// 오늘이 주말인지 평일인지 얻기
+
+func GetWeekends() bool {
+
+	now := time.Now()
+	day := now.Weekday().String()
+
+	switch day {
+
+	case "Monday", "Tuesday", "Wednesday", "Thursday", "Friday":
+		return false
+
+	case "Saturday", "Sunday":
+		return true
+
+	default:
+		return false
+
+	}
 
 }

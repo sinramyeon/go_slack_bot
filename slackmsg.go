@@ -227,62 +227,68 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv envs
 					return fmt.Errorf("failed to post message: %s", err)
 				}
 			*/
+
 			GetHelp(s, ev)
-
-		} else if strings.Contains(receivedMsg, "점심") {
-
-			log.Println("오늘 점심은 뭘로 드실래요?")
-
-			attachment := slack.Attachment{
-
-				Text:       "오늘의 점심",
-				Color:      "#f9a41b",
-				CallbackID: "button",
-				Actions: []slack.AttachmentAction{
-
-					{
-						Name:  "lunch",
-						Text:  "한솥",
-						Type:  "button",
-						Value: "hansot",
-					},
-					{
-						Name:  "lunch",
-						Text:  "샐러디",
-						Type:  "button",
-						Value: "salady",
-					},
-					{
-						Name:  "lunch",
-						Text:  "따로 먹을래요",
-						Type:  "button",
-						Value: "myown",
-						Style: "danger",
-						Confirm: &slack.ConfirmationField{
-
-							Title:       "오늘은 따로 드시겠어요?",
-							Text:        "도시락 멤버에서 빼 드립니다.",
-							OkText:      "그래",
-							DismissText: "아니",
-						},
-					},
-				},
-			}
-
-			params := slack.PostMessageParameters{
-
-				Attachments: []slack.Attachment{
-					attachment,
-				},
-			}
-
-			if _, _, err := s.client.PostMessage(ev.Channel, "", params); err != nil {
-				return fmt.Errorf("failed to post message: %s", err)
-			}
 
 		} else {
 			s.client.PostMessage(ev.Channel, "무엇을 도와드릴까요? 도움, 도움말 이라고 입력해보세요~", slack.PostMessageParameters{})
 		}
+
+		/*
+
+			 else if strings.Contains(receivedMsg, "점심") {
+
+				log.Println("오늘 점심은 뭘로 드실래요?")
+
+				attachment := slack.Attachment{
+
+					Text:       "오늘의 점심",
+					Color:      "#f9a41b",
+					CallbackID: "button",
+					Actions: []slack.AttachmentAction{
+
+						{
+							Name:  "lunch",
+							Text:  "한솥",
+							Type:  "button",
+							Value: "hansot",
+						},
+						{
+							Name:  "lunch",
+							Text:  "샐러디",
+							Type:  "button",
+							Value: "salady",
+						},
+						{
+							Name:  "lunch",
+							Text:  "따로 먹을래요",
+							Type:  "button",
+							Value: "myown",
+							Style: "danger",
+							Confirm: &slack.ConfirmationField{
+
+								Title:       "오늘은 따로 드시겠어요?",
+								Text:        "도시락 멤버에서 빼 드립니다.",
+								OkText:      "그래",
+								DismissText: "아니",
+							},
+						},
+					},
+				}
+
+				params := slack.PostMessageParameters{
+
+					Attachments: []slack.Attachment{
+						attachment,
+					},
+				}
+
+				if _, _, err := s.client.PostMessage(ev.Channel, "", params); err != nil {
+					return fmt.Errorf("failed to post message: %s", err)
+				}
+
+			}
+		*/
 
 	}
 
@@ -307,146 +313,155 @@ func (s *SlackListener) PostByTime(env envsetting.EnvConfig) {
 
 		case 10:
 
-			if day == "Monday" {
+			if strings.Contains(day, "Monday") {
 				s.client.PostMessageTo(env.ChannelID, "수습평가표 쓰세요", "U6DKDJMPV", slack.PostMessageParameters{})
 			}
 
-			if day == "Thursday" {
+			if strings.Contains(day, "Thursday") {
 				s.client.PostMessageTo(env.ChannelID, "주간보고서 쓰세요", "U6DKDJMPV", slack.PostMessageParameters{})
 			}
 
 		case 12:
-			PostTimeMessage(s, env, "a470e0", "점심알림", "점심 식사 하시러 갈 시간입니다!", "오늘도 맛있는 점심 되세요.")
+
+			if !util.GetWeekends() {
+				PostTimeMessage(s, env, "a470e0", "점심알림", "점심 식사 하시러 갈 시간입니다!", "오늘도 맛있는 점심 되세요.")
+			}
 
 			// 시간별 커밋 알림봇 구현
-		case 14:
 
-			b, _ := util.GetGitCommit("hero0926")
-			if !b {
-				attachment := slack.Attachment{
+			/*
+				case 14:
 
-					Color:      "#635129",
-					AuthorName: "Commit-bot",
-					Title:      "아직 한 커밋이 없어요!",
-				}
-				params := slack.PostMessageParameters{
-					Attachments: []slack.Attachment{
-						attachment,
-					},
-				}
+					b, _ := util.GetGitCommit("hero0926")
+					if !b {
+						attachment := slack.Attachment{
 
-				//제가 새로 만든 유저에게 멘션을 보내는 메서드(풀 리퀘스트는 받아질 것인가?)
-				//사용법 (보낼 채널, 보낼 텍스트, 보낼 유저(아이디), 파라미터)
-				//그냥 쓰시려면 s.client.PostMessage(env.ChannelID, "<@유저아이디> ", params)
-				//꼭 <> 를 넣어줘야 가더라고요...
-				//s.client.PostMessageTo(env.ChannelID, "", "U6DKDJMPV", params)
-				/*
-					func (api *Client) PostMessageTo(channel, text string, id string, params PostMessageParameters) (string, string, error) {
-						respChannel, respTimestamp, _, err := api.SendMessageContext(
-							context.Background(),
-							channel,
-							MsgOptionText("<@"+id+"> "+text, params.EscapeText),
-							MsgOptionAttachments(params.Attachments...),
-							MsgOptionPostMessageParameters(params),
-						)
-						return respChannel, respTimestamp, err
+							Color:      "#635129",
+							AuthorName: "Commit-bot",
+							Title:      "아직 한 커밋이 없어요!",
+						}
+						params := slack.PostMessageParameters{
+							Attachments: []slack.Attachment{
+								attachment,
+							},
+						}
+
+						//제가 새로 만든 유저에게 멘션을 보내는 메서드(풀 리퀘스트는 받아질 것인가?)
+						//사용법 (보낼 채널, 보낼 텍스트, 보낼 유저(아이디), 파라미터)
+						//그냥 쓰시려면 s.client.PostMessage(env.ChannelID, "<@유저아이디> ", params)
+						//꼭 <> 를 넣어줘야 가더라고요...
+						//s.client.PostMessageTo(env.ChannelID, "", "U6DKDJMPV", params)
+						/*
+							func (api *Client) PostMessageTo(channel, text string, id string, params PostMessageParameters) (string, string, error) {
+								respChannel, respTimestamp, _, err := api.SendMessageContext(
+									context.Background(),
+									channel,
+									MsgOptionText("<@"+id+"> "+text, params.EscapeText),
+									MsgOptionAttachments(params.Attachments...),
+									MsgOptionPostMessageParameters(params),
+								)
+								return respChannel, respTimestamp, err
+							}
+
+
+						//또는 디엠을 보내고 싶을때는 채널명에 유저ID를 쓰시면 됩니다.
+						s.client.PostMessage("U6DKDJMPV", "", params)
 					}
-				*/
+				case 15:
+					b, _ := util.GetGitCommit("hero0926")
+					if !b {
+						attachment := slack.Attachment{
 
-				//또는 디엠을 보내고 싶을때는 채널명에 유저ID를 쓰시면 됩니다.
-				s.client.PostMessage("U6DKDJMPV", "", params)
-			}
-		case 15:
-			b, _ := util.GetGitCommit("hero0926")
-			if !b {
-				attachment := slack.Attachment{
+							Color:      "#633f29",
+							AuthorName: "Commit-bot",
+							Title:      "아직도! 한 커밋이 없어요!",
+						}
+						params := slack.PostMessageParameters{
+							Attachments: []slack.Attachment{
+								attachment,
+							},
+						}
+						s.client.PostMessage("U6DKDJMPV", "", params)
+					}
+				case 16:
+					b, _ := util.GetGitCommit("hero0926")
+					if !b {
+						attachment := slack.Attachment{
 
-					Color:      "#633f29",
-					AuthorName: "Commit-bot",
-					Title:      "아직도! 한 커밋이 없어요!",
-				}
-				params := slack.PostMessageParameters{
-					Attachments: []slack.Attachment{
-						attachment,
-					},
-				}
-				s.client.PostMessage("U6DKDJMPV", "", params)
-			}
-		case 16:
-			b, _ := util.GetGitCommit("hero0926")
-			if !b {
-				attachment := slack.Attachment{
+							Color:      "#632b29",
+							AuthorName: "Commit-bot",
+							Title:      "아직!!!!!!! 한개도 커밋이 없어요!",
+						}
+						params := slack.PostMessageParameters{
+							Attachments: []slack.Attachment{
+								attachment,
+							},
+						}
+						s.client.PostMessage("U6DKDJMPV", "", params)
+					}
+				case 17:
+					b, _ := util.GetGitCommit("hero0926")
+					if !b {
+						attachment := slack.Attachment{
 
-					Color:      "#632b29",
-					AuthorName: "Commit-bot",
-					Title:      "아직!!!!!!! 한개도 커밋이 없어요!",
-				}
-				params := slack.PostMessageParameters{
-					Attachments: []slack.Attachment{
-						attachment,
-					},
-				}
-				s.client.PostMessage("U6DKDJMPV", "", params)
-			}
-		case 17:
-			b, _ := util.GetGitCommit("hero0926")
-			if !b {
-				attachment := slack.Attachment{
+							Color:      "#680e0e",
+							AuthorName: "Commit-bot",
+							Title: `Commit-bot is watching your commit...
+							PLZ commit soon...(아직도 안했다는 소리이다.)`,
+						}
+						params := slack.PostMessageParameters{
+							Attachments: []slack.Attachment{
+								attachment,
+							},
+						}
+						s.client.PostMessage("U6DKDJMPV", "", params)
+					}
 
-					Color:      "#680e0e",
-					AuthorName: "Commit-bot",
-					Title: `Commit-bot is watching your commit...
-					PLZ commit soon...(아직도 안했다는 소리이다.)`,
-				}
-				params := slack.PostMessageParameters{
-					Attachments: []slack.Attachment{
-						attachment,
-					},
-				}
-				s.client.PostMessage("U6DKDJMPV", "", params)
-			}
+				case 18:
 
+					b, c := util.GetGitCommit("hero0926")
+
+					if !b {
+
+						attachment := slack.Attachment{
+
+							Color:      "#ff0033",
+							AuthorName: "긴급 알림",
+							Title:      "퇴근 할 시간인데도 커밋을 하지 않았습니다!",
+							Text:       "뭔가 하고 가시던지 집에 가서 해보세요!",
+						}
+						params := slack.PostMessageParameters{
+							Attachments: []slack.Attachment{
+								attachment,
+							},
+						}
+
+						s.client.PostMessage("U6DKDJMPV", "", params)
+
+					} else {
+
+						attachment := slack.Attachment{
+
+							Color:      "#ff0033",
+							AuthorName: "수고의 알림",
+							Title:      "퇴근 할 시간입니다!",
+							Text: `오늘도 수고하셨어요. ` +
+								"오늘은" + fmt.Sprint(c) + "개의 커밋을 하였습니다.",
+						}
+						params := slack.PostMessageParameters{
+							Attachments: []slack.Attachment{
+								attachment,
+							},
+						}
+
+						s.client.PostMessage("U6DKDJMPV", "", params)
+					}
+			*/
 		case 18:
 
-			b, c := util.GetGitCommit("hero0926")
-
-			if !b {
-
-				attachment := slack.Attachment{
-
-					Color:      "#ff0033",
-					AuthorName: "긴급 알림",
-					Title:      "퇴근 할 시간인데도 커밋을 하지 않았습니다!",
-					Text:       "뭔가 하고 가시던지 집에 가서 해보세요!",
-				}
-				params := slack.PostMessageParameters{
-					Attachments: []slack.Attachment{
-						attachment,
-					},
-				}
-
-				s.client.PostMessage("U6DKDJMPV", "", params)
-
-			} else {
-
-				attachment := slack.Attachment{
-
-					Color:      "#ff0033",
-					AuthorName: "수고의 알림",
-					Title:      "퇴근 할 시간입니다!",
-					Text: `오늘도 수고하셨어요. ` +
-						"오늘은" + fmt.Sprint(c) + "개의 커밋을 하였습니다.",
-				}
-				params := slack.PostMessageParameters{
-					Attachments: []slack.Attachment{
-						attachment,
-					},
-				}
-
-				s.client.PostMessage("U6DKDJMPV", "", params)
+			if !util.GetWeekends() {
+				PostTimeMessage(s, env, "ff0033", "퇴근알림", "퇴근 할 시간입니다!", "오늘도 수고하셨어요.")
 			}
-
-			PostTimeMessage(s, env, "ff0033", "퇴근알림", "퇴근 할 시간입니다!", "오늘도 수고하셨어요.")
 
 			// 야근봇 구현
 			// 퇴근 후 일정시간 자동 백업 등을 수행할 수 있을 것 같음...
@@ -470,6 +485,7 @@ func (s *SlackListener) PostByTime(env envsetting.EnvConfig) {
 }
 
 // 봇 답장용 메서드
+
 func PostMessage(m map[string]string, s *SlackListener, ev *slack.MessageEvent, color string) {
 
 	for k, v := range m {
@@ -582,15 +598,13 @@ func GetHelp(s *SlackListener, ev *slack.MessageEvent) {
 		Title: "봇 사용 커맨드",
 		Text: `안녕하세요? IT봇입니다.
 				IT봇 사용을 위해서 참고해주세요~
-				1. @it_trend_go3 도움말 기능(개발중)
-				2. @it_trend_go3 버튼 기능(개발중)
-				2. 기사, 뉴스, 소식 키워드 입력 시 오늘의 IT 뉴스라인을 보실 수 있습니다.
-				3. 오키, 옼희 입력 시 오키 주간 기술 트렌드를 보실 수 있습니다.
-				4. 블로그 입력 시 엄선된 기술블로그들의 rss 피드를 얻어옵니다.
-				5. 트위터, 트윗 입력 시 엄선된 트위터를 크롤링해 옵니다.
-				6. git 사용자id(Ex - git hero0926) 입력 시 오늘의 커밋상황을 안내해 드립니다.
-				7. 근무자 입력 시 현재 슬랙에 로그인 해 있는 사용자를 안내해 드립니다.
-				8. 무료, 공짜, 책 입력 시 오늘의 packt 사 무료 ebook을 알려드립니다.`,
+				1. 기사, 뉴스, 소식 키워드 입력 시 오늘의 IT 뉴스라인을 보실 수 있습니다.
+				2. 오키, 옼희 입력 시 오키 주간 기술 트렌드를 보실 수 있습니다.
+				3. 블로그 입력 시 엄선된 기술블로그들의 rss 피드를 얻어옵니다.
+				4. 트위터, 트윗 입력 시 엄선된 트위터를 크롤링해 옵니다.
+				5. git 사용자id(Ex - git hero0926) 입력 시 오늘의 커밋상황을 안내해 드립니다.
+				6. 근무자 입력 시 현재 슬랙에 로그인 해 있는 사용자를 안내해 드립니다.
+				7. 무료, 공짜, 책 입력 시 오늘의 packt 사 무료 ebook을 알려드립니다.`,
 	}
 	params := slack.PostMessageParameters{
 		Attachments: []slack.Attachment{
