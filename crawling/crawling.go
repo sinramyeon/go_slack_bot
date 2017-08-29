@@ -340,7 +340,7 @@ func OkkyScrape() map[string]string {
 // 깃허브 고 오픈소스 찾기
 func GoScrape() map[string]string {
 
-	// 깃허브에 연ㅇ결
+	// 깃허브에 연결
 
 	doc, _ := goquery.NewDocument("https://github.com/trending/go?since=daily")
 
@@ -409,6 +409,8 @@ func NewsScrape() map[string]string {
 	})
 	return newslist
 }
+
+// 무료 IT서적 찾기
 
 func PacktFreeBook() string {
 
