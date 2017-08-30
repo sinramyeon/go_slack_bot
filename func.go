@@ -187,29 +187,24 @@ func (s *SlackListener) PostByTime(env envsetting.EnvConfig) {
 
 			if !util.GetWeekends() {
 				w := util.TommorrowWeather()
-				if len(w) == 0 {
-					s.client.PostMessage(env.ChannelID, "알 수 없는 에러가 발생했습니다. 다시 시도해 주세요.", slack.PostMessageParameters{})
-				} else {
 
-					for k, v := range w {
+				for k, v := range w {
 
-						attachment := slack.Attachment{
+					attachment := slack.Attachment{
 
-							Color: "#99d5cf",
-							Title: k,
-							Text:  v,
-						}
-
-						params := slack.PostMessageParameters{
-
-							Attachments: []slack.Attachment{
-								attachment,
-							},
-						}
-
-						s.client.PostMessage(env.ChannelID, "", params)
-
+						Color: "#99d5cf",
+						Title: k,
+						Text:  v,
 					}
+
+					params := slack.PostMessageParameters{
+
+						Attachments: []slack.Attachment{
+							attachment,
+						},
+					}
+
+					s.client.PostMessage(env.ChannelID, "", params)
 
 				}
 			}

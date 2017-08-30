@@ -157,16 +157,16 @@ func GetBasicWeather() map[string]string {
 
 	for _, v := range weather.Weather.Summary {
 
-		var Today string = `최저 : ` + v.Today.Temperature.Tmax +
-			"최고 : " + v.Today.Temperature.Tmin +
+		var Today string = `최고 : ` + v.Today.Temperature.Tmax +
+			"최저 : " + v.Today.Temperature.Tmin +
 			`도이며, 기상 상황은 ` + v.Today.Sky.Name + `과 같겠습니다.`
 
-		var Tomorrow string = `최저 : ` + v.Tomorrow.Temperature.Tmax +
-			"최고 : " + v.Tomorrow.Temperature.Tmin +
+		var Tomorrow string = `최고 : ` + v.Tomorrow.Temperature.Tmax +
+			"최저 : " + v.Tomorrow.Temperature.Tmin +
 			`도이며, 기상 상황은 ` + v.Tomorrow.Sky.Name + `과 같겠습니다.`
 
-		var DayAfterTomorrow string = `최저 : ` + v.DayAfterTomorrow.Temperature.Tmax +
-			"최고 : " + v.DayAfterTomorrow.Temperature.Tmin +
+		var DayAfterTomorrow string = `최고 : ` + v.DayAfterTomorrow.Temperature.Tmax +
+			"최저 : " + v.DayAfterTomorrow.Temperature.Tmin +
 			`도이며, 기상 상황은 ` + v.DayAfterTomorrow.Sky.Name + `과 같겠습니다.`
 
 		weatherlist["오늘 날씨를 알려드립니다."] = Today
@@ -196,8 +196,8 @@ func TommorrowWeather() map[string]string {
 
 	for _, v := range weather.Weather.Summary {
 
-		var Tomorrow string = `최저 : ` + v.Tomorrow.Temperature.Tmax +
-			"최고 : " + v.Tomorrow.Temperature.Tmin +
+		var Tomorrow string = `최고 : ` + v.Tomorrow.Temperature.Tmax +
+			"최저 : " + v.Tomorrow.Temperature.Tmin +
 			`도이며, 기상 상황은 ` + v.Tomorrow.Sky.Name + `과 같겠습니다.`
 
 		weatherlist["내일 날씨를 알려드립니다."] = Tomorrow
