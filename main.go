@@ -137,6 +137,8 @@ func (s *SlackListener) handleMessageEvent(ev *slack.MessageEvent, tweetenv envs
 			return nil
 		}
 
+		util.GetSeoulWeather()
+
 		// 1. 기사 찾기
 
 		if strings.Contains(receivedMsg, "기사") || strings.Contains(receivedMsg, "뉴스") || strings.Contains(receivedMsg, "소식") {

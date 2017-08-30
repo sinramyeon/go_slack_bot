@@ -336,7 +336,6 @@ func OkkyScrape() map[string]string {
 
 }
 
-// 갑자기 null값 보냄
 // 깃허브 고 오픈소스 찾기
 func GoScrape() map[string]string {
 
