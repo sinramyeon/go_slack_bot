@@ -20,8 +20,8 @@ import (
 	"math/rand"
 	"time"
 
-	"slack_test/envsetting"
-	"slack_test/util"
+	"slackbot/envsetting"
+	"slackbot/util"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/dghubble/go-twitter/twitter"
@@ -124,7 +124,7 @@ func RssScrape() map[string]string {
 
 	defer func() {
 		if err := recover(); err != nil {
-			log.Println(err)
+			log.Println("[ERROR]", err)
 			recover()
 		}
 	}()

@@ -7,7 +7,7 @@ import (
 )
 
 // 문자열 슬라이싱용(귀찮음)
-func between(value string, a string, b string) string {
+func Between(value string, a string, b string) string {
 	// Get substring between two strings.
 	posFirst := strings.Index(value, a)
 	if posFirst == -1 {
@@ -24,7 +24,7 @@ func between(value string, a string, b string) string {
 	return value[posFirstAdjusted:posLast]
 }
 
-func before(value string, a string) string {
+func Before(value string, a string) string {
 	// Get substring before a string.
 	pos := strings.Index(value, a)
 	if pos == -1 {
@@ -33,7 +33,7 @@ func before(value string, a string) string {
 	return value[0:pos]
 }
 
-func after(value string, a string) string {
+func After(value string, a string) string {
 	// Get substring after a string.
 	pos := strings.LastIndex(value, a)
 	if pos == -1 {

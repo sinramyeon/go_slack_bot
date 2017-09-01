@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"slack_test/envsetting"
+	"slackbot/envsetting"
 
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
@@ -36,7 +36,7 @@ func GetGitCommit(id string) (b bool, commit int) {
 	// 유저 이벤트 받기
 	events, _, err := client.Activity.ListEventsPerformedByUser(context.Background(), id, true, nil)
 	if err != nil {
-		log.Println(err)
+		log.Println("[ERROR]", err)
 		return false, 1
 	}
 

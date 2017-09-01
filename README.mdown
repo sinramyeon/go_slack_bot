@@ -1,3 +1,5 @@
+![](file/godoli.png)
+
 # go 웹 크롤러 슬랙 봇
 
 go로 만든 슬랙 크롤러 봇입니다. 사용한 라이브러리는 아래와 같습니다.
@@ -11,31 +13,54 @@ go로 만든 슬랙 크롤러 봇입니다. 사용한 라이브러리는 아래�
 7. [google/go-github/github](https://github.com/google/go-github/github)
 8. [golang.org/x/oauth2](https://golang.org/x/oauth2)
 
+
+vendor 가 잘 안 먹을 시 실행하세요.
+
+
+```
+go get -u github.com/PuerkitoBio/goquery
+go get -u github.com/dghubble/go-twitter/twitter
+go get -u github.com/dghubble/oauth1
+go get -u golang.org/x/oauth2
+go get -u github.com/google/go-github/github
+go get -u github.com/nlopes/slack
+go get -u github.com/mmcdole/gofeed
+go get -u github.com/parnurzeal/gorequest
+```
+
 또 아래 분의 샘플에서 기본 틀을 얻었습니다.
 
 [tcnksm/go-slack-interactive](https://github.com/tcnksm/go-slack-interactive)
 
-위 봇은 아래와 같이 작동합니다.
-![](file/go.gif)
-![](file/go2.gif)
-![](file/go3.gif)
-
-또 시간별로 이런 알림도 줍니다.
-
 ---
 
+위 봇은 아래와 같이 작동합니다.
+
+![](file/godoliex.PNG)
+
+
 ## 사용법
+
+### 기본적으로 go돌이 @it_trend_go3 에게 멘션을 해야 답을 줍니다.
+
+#### 날씨 입력 시 키워드에 따라 오늘, 내일, 모레의 날씨를 알려줍니다.
 
 #### 기사, 뉴스, 소식 입력 시 최신 IT기사를 크롤링합니다.
 
 #### 오키, 옼희 입력 시 오키의 기술 게시글을 크롤링합니다.
 
 #### 트위터, 트윗, twitter 입력 시 트위터를 크롤링합니다.
-
-#### git 유저아이디 입력 시 유저의 오늘 깃허브 커밋 여부를 크롤링합니다.
-
 #### 무료, 공짜 책 입력 시 오늘의 packt 무료 서적을 알려줍니다.
+
+#### 행사, 이벤트 입력 시 인터파크 임직원 대상 이벤트를 알려줍니다.
 
 #### 업무시간 매시 알림 기능이 있습니다
 
-#### 업무시간 외 슬랙 로그인 유저 알림기능인 야근봇 기능이 있습니다.
+##### 아침 10시 : 오늘의 무료 책
+##### 점심 12시 : 점심시간 알림
+##### 오후 5시 : 내일 날씨 알림
+##### 오후 6시 : *퇴근알림*
+
+---
+
+제작 [김설화](https://github.com/hero0926)
