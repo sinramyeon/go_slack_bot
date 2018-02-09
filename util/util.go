@@ -46,6 +46,8 @@ func After(value string, a string) string {
 	return value[adjustedPos:len(value)]
 }
 
+// Whitespace Trim용(아주 귀찮았음)
+// 왼쪽 오른쪽 앞 뒤 등 그냥 글씨 전후에 있는 공백 모두 삭제함
 func TrimTrim(s string) string {
 
 	strings.Trim(s, " ")
@@ -76,7 +78,7 @@ func SelRand(m map[string]string) (k string, v string) {
 /*
 이걸 활용해서 매일 n시에 기사 크롤링을 해온 후 저장해 뒀다 선별해서 보여줄 수도 있고
 이걸 활용해서 매일 n시에 사용자의 작업을 확인한 후 메시지를 보내 줄 수도 있을 것 같음
-또는 주변 맛집을 찾아다가 점심시간에 투표 포스팅을 할 수도 있음
+또는 주변 맛집을 찾아다가 점심시간에 투표 포스팅을 할 수도 있음 -> 그러나 그런것을 만들지 않았음
 */
 
 func GetHour() *time.Ticker {

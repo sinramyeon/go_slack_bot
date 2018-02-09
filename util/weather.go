@@ -28,6 +28,9 @@ const Simpleurl = "http://apis.skplanetx.com/weather/summary?version=1&lat=%s&lo
 // 시간별 현재날씨 주소
 const Nowurl = "http://apis.skplanetx.com/weather/current/hourly?lon=127.02583&village=&county=korea&lat=%s&lon=%s&city=%s&version=1"
 
+// 분별날씨 주소
+const Rightnowurl = "http://apis.skplanetx.com/weather/current/minutely?lat=%s&lon=%s&village=&county=&stnid=&city=&version=1"
+
 // 자외선지수 주소
 const UVurl = "http://apis.skplanetx.com/weather/windex/uvindex?version=1&lat=%s&lon=%s"
 
@@ -97,6 +100,34 @@ type Grid struct {
 	City    string `json:"city"`
 	County  string `json:"county"`
 	Village string `json:"village"`
+}
+
+// 3. 분별 날씨
+type MinWeather struct {
+	Weather Minutely `json:"weather"`
+}
+
+type Minutely struct {
+	Minutely []struct {
+		Station     Station     `json:"station"`
+		Temperature Temperature `json:"temperature"`
+		Sky         Sky         `json:"sky"`
+		Rain        Rain        `json:"rain"`
+	} `json:"minutely"`
+}
+
+type Rain struct {
+	SinceOntime   string `json:"sinceOntime"`
+	SinceMidnight string `json:"sinceMidnight"`
+	Last10min     string `json:"last10min"`
+	Last15min     string `json:"last15min"`
+	Last30min     string `json:"last30min"`
+}
+
+type RightNow struct {
+	Temperature Temperature
+	Sky         Sky
+	Rain        Rain
 }
 
 // 자외선 지수
@@ -330,6 +361,7 @@ func GetTodayPollution() map[string]string {
 	return Pollution
 }
 
+// 내일날씨
 func TommorrowWeather() map[string]string {
 
 	weatherlist := make(map[string]string)
@@ -358,4 +390,33 @@ func TommorrowWeather() map[string]string {
 	}
 
 	return weatherlist
+}
+
+// 지금비와!?
+func IsItRaining() map[string]RightNow {
+
+	jsonStr := CallAPI()
+
+	seocho := fmt.Sprintf(Rightnowurl, "37.508214", "127.056541")
+	body := ReqWeather(seocho, jsonStr)
+
+	// 받아온 json값을 처리합니다.
+	var minweather MinWeather
+	if err := json.Unmarshal(body, &minweather); err != nil {
+		log.Fatal(err)
+	}
+
+	rightnow := make(map[string]RightNow)
+
+	for _, v := range minweather.Weather.Minutely {
+
+		Name := v.Station.Name
+
+		rightnow[Name] = RightNow{
+			Rain:        v.Rain,
+			Sky:         v.Sky,
+			Temperature: v.Temperature,
+		}
+	}
+	return rightnow
 }

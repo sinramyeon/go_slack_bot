@@ -362,6 +362,7 @@ func GoScrape() map[string]string {
 			return false
 		} else {
 			// Trim 시리즈 적용하는 모듈 나중에 만들어야겠음(너무도 귀찮음)
+			// 만들었음
 			title := s.Find("h3 a").AttrOr("href", "없음")
 			util.TrimTrim(title)
 			desc := s.Find(".py-1 p").Text()
@@ -410,7 +411,7 @@ func NewsScrape() map[string]string {
 }
 
 // 무료 IT서적 찾기
-
+// 가끔 이 사이트가 불안정해서 서적 이름 등이 안나옴...
 func PacktFreeBook() string {
 
 	doc, _ := goquery.NewDocument("https://www.packtpub.com/packt/offers/free-learning")
