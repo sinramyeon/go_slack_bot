@@ -1,5 +1,3 @@
-![](file/godoli.png)
-
 # go 웹 크롤러 슬랙 봇
 
 go로 만든 슬랙 크롤러 봇입니다. 사용한 라이브러리는 아래와 같습니다.
@@ -34,10 +32,6 @@ go get -u github.com/parnurzeal/gorequest
 
 ---
 
-위 봇은 아래와 같이 작동합니다.
-
-![](file/godoliex.PNG)
-
 
 ## 사용법
 
@@ -62,5 +56,3 @@ go get -u github.com/parnurzeal/gorequest
 ##### 오후 6시 : *퇴근알림*
 
 ---
-
-제작 [김설화](https://github.com/hero0926)
